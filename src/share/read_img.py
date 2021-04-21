@@ -37,6 +37,9 @@ class ImagesLoader:
             if os.path.isdir(sub_path):
                 rtn.extend(self._load_file_list(sub_path))
             else:
+                # TODO exclude some file
+                if sub_path.endswith('.json'):
+                    continue
                 rtn.append(sub_path)
 
         return rtn
