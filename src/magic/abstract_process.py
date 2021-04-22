@@ -10,8 +10,12 @@ class AbstractProcess:
     """
 
     def __init__(self,
-                 width=1024,
-                 height=768):
+                 width=1754,
+                 height=1240):
+
+        assert width is not None
+        assert height is not None
+
         self._width = int(width)
         self._height = int(height)
 

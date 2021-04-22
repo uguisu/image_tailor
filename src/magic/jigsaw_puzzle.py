@@ -15,11 +15,8 @@ class JigsawPuzzle(AbstractProcess):
     def __init__(self,
                  file_list=None,
                  piece=4,
-                 width=1024,
-                 height=768):
-
-        assert width is not None
-        assert height is not None
+                 width=1754,
+                 height=1240):
 
         super().__init__(width=width, height=height)
 
