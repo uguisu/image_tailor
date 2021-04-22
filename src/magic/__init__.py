@@ -2,3 +2,4 @@
 # author xin.he
 from .abstract_process import AbstractProcess
 from .jigsaw_puzzle import JigsawPuzzle
+from .sticker_player import StickerPlayer
