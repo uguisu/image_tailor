@@ -8,11 +8,19 @@ class ImagesLoader:
     Load images from folder, skip empty folder
     """
 
-    def __init__(self, folder):
+    def __init__(self,
+                 folder,
+                 stander_width=None,
+                 stander_height=None):
         assert folder is not None
         assert isinstance(folder, str)
 
         self._folder = folder
+        self._stander_width = stander_width
+        self._stander_height = stander_height
+
+        # load file list
+        self._file_list = self._load_file_list(self._folder)
 
     def _load_file_list(self, root_path=None):
         """
@@ -44,9 +52,22 @@ class ImagesLoader:
 
         return rtn
 
+    @DeprecationWarning
     def load_file_list(self):
         """
         load file list
         :return: file list
         """
-        return self._load_file_list(self._folder)
+        return self._file_list
+
+    @property
+    def file_list(self):
+        return self._file_list
+
+    @property
+    def stander_width(self):
+        return self._stander_width
+
+    @property
+    def stander_height(self):
+        return self._stander_height

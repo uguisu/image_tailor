@@ -15,22 +15,19 @@ class JigsawPuzzle(AbstractProcess):
     def __init__(self,
                  file_list=None,
                  piece=4,
-                 weight=1920,
-                 height=1080):
-        super().__init__()
+                 width=1754,
+                 height=1240):
+
+        super().__init__(width=width, height=height)
 
         # verify
         assert file_list is not None
         assert isinstance(file_list, list)
         assert piece is not None
         assert isinstance(piece, int)
-        assert weight is not None
-        assert height is not None
 
         self._file_list = file_list
         self._piece = piece
-        self._weight = int(weight)
-        self._height = int(height)
 
     def get_image_piece_index(self):
         """
@@ -74,9 +71,18 @@ class JigsawPuzzle(AbstractProcess):
 
             idx = self.get_image_piece_index()
 
+            (slice_x, slice_y) = self.get_slice_point()
+            print(slice_x, slice_y)
+            work_img = np.zeros((self._height, self._width, 3), np.uint8)
+            work_img = cv2.line(work_img, (0, slice_y), (self._width, slice_y), (0, 255, 0), 2)
+            work_img = cv2.line(work_img, (slice_x, 0), (slice_x, self._height), (0, 255, 0), 2)
+
             for idx_f in idx:
                 part_img = cv2.imread(self._file_list[idx_f])
                 (h, w) = part_img.shape[:2]
 
                 # debug
                 # print(self._file_list[idx_f], 'h = ', h, ', w = ', w)
+
+            cv2.imshow('debug', work_img)
+            cv2.waitKey()
