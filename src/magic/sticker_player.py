@@ -19,7 +19,7 @@ class StickerPlayer(AbstractProcess):
                  piece=4,
                  width=1754,
                  height=1240,
-                 border=10):
+                 border=15):
 
         super().__init__(width=width, height=height)
 
@@ -34,7 +34,7 @@ class StickerPlayer(AbstractProcess):
         # refresh seed
         self._random_generator = np.random.RandomState(datetime.datetime.now().microsecond)
 
-    def get_slice_image(self):
+    def get_slice_image(self, used_dict):
         """
         randomly pickup a image and zoom to target size
         :return: resized image
@@ -43,18 +43,30 @@ class StickerPlayer(AbstractProcess):
         loader_idx = 0
         if 1 < len(self._loader_list):
             loader_idx = self._random_generator.randint(0, len(self._loader_list), size=1)
-        _loader = self._loader_list[loader_idx[0]]
+        if isinstance(loader_idx, int):
+            _loader = self._loader_list[loader_idx]
+        else:
+            _loader = self._loader_list[loader_idx[0]]
 
         # check type
         assert isinstance(_loader, ImagesLoader)
 
         # pick a image
-        sticker_idx = self._random_generator.randint(0, len(_loader.file_list), size=1)
-        part_img = cv2.imread(_loader.file_list[sticker_idx[0]])
-        # (ori_h, ori_w) = part_img.shape[:2]
+        re_try = 3
+        while re_try > 0:
+            sticker_idx = self._random_generator.randint(0, len(_loader.file_list), size=1)
+            sticker_nm = _loader.file_list[sticker_idx[0]]
+            if used_dict.get(sticker_nm) is not None:
+                re_try -= 1
+            else:
+                used_dict[sticker_nm] = sticker_nm
+                break
+
+        part_img = cv2.imread(sticker_nm)
 
         # zoom
         part_img = self._resize(part_img, _loader.stander_width, _loader.stander_height)
+
         return part_img
 
     def _resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -101,22 +113,27 @@ class StickerPlayer(AbstractProcess):
                 "w": self._border
             }
             max_width = 0
+            avoid_duplicate_image_dict = dict()
 
             for j in range(self._piece):
                 # get a sticker index
-                _sticker = self.get_slice_image()
+                _sticker = self.get_slice_image(avoid_duplicate_image_dict)
                 (sticker_h, sticker_w) = _sticker.shape[:2]
 
-                # TODO debug
-                print('sticker_h = ', sticker_h, ', sticker_w = ', sticker_w)
+                # calculate bias
+                [bias_h, bias_w] = self._random_generator.standard_normal(size=2) * 5
 
                 # size check
                 if pin["h"] + sticker_h > self._height:
                     # move pin location
                     pin["h"] = self._border
                     pin["w"] = max_width
+                    # add bias
+                    if pin["w"] + int(bias_w) > 0:
+                        pin["w"] += int(bias_w)
+
                     # TODO debug
-                    print('size check, change pin to = ', pin)
+                    # print('size check, change pin to = ', pin)
 
                 if pin["h"] + sticker_h > self._height or pin["w"] + sticker_w > self._width:
                     # image too big, skip it
@@ -126,12 +143,11 @@ class StickerPlayer(AbstractProcess):
 
                 pin["h"] = pin["h"] + sticker_h + self._border
                 max_width = max(max_width, pin["w"] + sticker_w)
-
-                # TODO debug
-                print('pin = ', pin)
-                print('max_width = ', max_width)
+                # add bias
+                if pin["h"] + int(bias_h) > 0:
+                    pin["h"] += int(bias_h)
 
             # TODO debug
             # cv2.imshow('fixed', blank_image)
             # cv2.waitKey()
-            cv2.imwrite('debug.jpg', blank_image)
+            cv2.imwrite('debug_' + str(i) + '.jpg', blank_image)
