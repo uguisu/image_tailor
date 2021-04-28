@@ -43,7 +43,10 @@ class StickerPlayer(AbstractProcess):
         loader_idx = 0
         if 1 < len(self._loader_list):
             loader_idx = self._random_generator.randint(0, len(self._loader_list), size=1)
-        _loader = self._loader_list[loader_idx[0]]
+        if isinstance(loader_idx, int):
+            _loader = self._loader_list[loader_idx]
+        else:
+            _loader = self._loader_list[loader_idx[0]]
 
         # check type
         assert isinstance(_loader, ImagesLoader)
@@ -108,15 +111,22 @@ class StickerPlayer(AbstractProcess):
                 (sticker_h, sticker_w) = _sticker.shape[:2]
 
                 # TODO debug
-                print('sticker_h = ', sticker_h, ', sticker_w = ', sticker_w)
+                # print('sticker_h = ', sticker_h, ', sticker_w = ', sticker_w)
+
+                # calculate bias
+                [bias_h, bias_w] = self._random_generator.standard_normal(size=2) * 5
 
                 # size check
                 if pin["h"] + sticker_h > self._height:
                     # move pin location
                     pin["h"] = self._border
                     pin["w"] = max_width
+                    # add bias
+                    if pin["w"] + int(bias_w) > 0:
+                        pin["w"] += int(bias_w)
+
                     # TODO debug
-                    print('size check, change pin to = ', pin)
+                    # print('size check, change pin to = ', pin)
 
                 if pin["h"] + sticker_h > self._height or pin["w"] + sticker_w > self._width:
                     # image too big, skip it
@@ -126,6 +136,9 @@ class StickerPlayer(AbstractProcess):
 
                 pin["h"] = pin["h"] + sticker_h + self._border
                 max_width = max(max_width, pin["w"] + sticker_w)
+                # add bias
+                if pin["h"] + int(bias_h) > 0:
+                    pin["h"] += int(bias_h)
 
                 # TODO debug
                 print('pin = ', pin)
@@ -134,4 +147,4 @@ class StickerPlayer(AbstractProcess):
             # TODO debug
             # cv2.imshow('fixed', blank_image)
             # cv2.waitKey()
-            cv2.imwrite('debug.jpg', blank_image)
+            cv2.imwrite('debug_' + str(i) + '.jpg', blank_image)
