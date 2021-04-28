@@ -11,13 +11,15 @@ class ImagesLoader:
     def __init__(self,
                  folder,
                  stander_width=None,
-                 stander_height=None):
-        assert folder is not None
-        assert isinstance(folder, str)
+                 stander_height=None,
+                 filter_chain=None):
+        assert folder is not None and isinstance(folder, str)
+        assert (filter_chain is None) or (filter_chain is not None and isinstance(filter_chain, Exclusion))
 
         self._folder = folder
         self._stander_width = stander_width
         self._stander_height = stander_height
+        self._filter_chain = filter_chain
 
         # load file list
         self._file_list = self._load_file_list(self._folder)
@@ -45,8 +47,8 @@ class ImagesLoader:
             if os.path.isdir(sub_path):
                 rtn.extend(self._load_file_list(sub_path))
             else:
-                # TODO exclude some file
-                if sub_path.endswith('.json'):
+                # exclude some file
+                if self._filter_chain is not None and self._filter_chain.filter(sub_path):
                     continue
                 rtn.append(sub_path)
 
@@ -71,3 +73,41 @@ class ImagesLoader:
     @property
     def stander_height(self):
         return self._stander_height
+
+
+class Exclusion:
+    """
+    Exclusion
+
+    Exclusion is a linked list
+    """
+    def __init__(self, next_filter=None):
+        # verify
+        assert next_filter is None or isinstance(next_filter, Exclusion)
+
+        self._next_filter = next_filter
+
+    def filter(self, file_name_as_string):
+        """
+        filter
+        :param file_name_as_string: file name as string
+        :return: True - find problem
+        """
+        if file_name_as_string is None or '' == file_name_as_string:
+            return False
+
+        # execute
+        if self.exec(file_name_as_string):
+            return True
+        else:
+            # call next filter
+            if self._next_filter is not None:
+                return self._next_filter.filter(file_name_as_string)
+
+    def exec(self, file_name_as_string):
+        """
+        execute
+        :param file_name_as_string: file name as string
+        :return: True - find problem
+        """
+        raise RuntimeError('use implement class')
