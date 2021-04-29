@@ -97,14 +97,14 @@ class Exclusion:
             return False
 
         # execute
-        if self.exec(file_name_as_string):
+        if self._exec(file_name_as_string):
             return True
         else:
             # call next filter
             if self._next_filter is not None:
                 return self._next_filter.filter(file_name_as_string)
 
-    def exec(self, file_name_as_string):
+    def _exec(self, file_name_as_string):
         """
         execute
         :param file_name_as_string: file name as string
