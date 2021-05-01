@@ -1,6 +1,6 @@
 # coding=utf-8
 # author xin.he
-from magic import AbstractProcess
+from magic import AbstractProcess, IcdarWriter, TailorNote
 
 import cv2
 import datetime
@@ -34,7 +34,7 @@ class StickerPlayer(AbstractProcess):
         # refresh seed
         self._random_generator = np.random.RandomState(datetime.datetime.now().microsecond)
 
-    def get_slice_image(self, used_dict):
+    def get_slice_image(self, used_dict, tailor_info):
         """
         randomly pickup a image and zoom to target size
         :return: resized image
@@ -50,6 +50,7 @@ class StickerPlayer(AbstractProcess):
 
         # check type
         assert isinstance(_loader, ImagesLoader)
+        assert isinstance(tailor_info, TailorNote)
 
         # pick a image
         re_try = 3
@@ -66,6 +67,13 @@ class StickerPlayer(AbstractProcess):
 
         # zoom
         part_img = self._resize(part_img, _loader.stander_width, _loader.stander_height)
+
+        # save info
+        # tailor_info.image_path = sticker_nm
+        # the last part of path is the label
+        _pa = sticker_nm[0:sticker_nm.rfind('/')]
+        _pa = _pa[-1 * (len(_pa) - _pa.rfind('/') - 1):]
+        tailor_info.label = _pa
 
         return part_img
 
@@ -103,6 +111,8 @@ class StickerPlayer(AbstractProcess):
         if 0 == loop:
             return None
 
+        rtn = []
+
         for i in range(loop):
 
             # create a new blank image
@@ -114,10 +124,14 @@ class StickerPlayer(AbstractProcess):
             }
             max_width = 0
             avoid_duplicate_image_dict = dict()
+            output_writer = IcdarWriter()
 
             for j in range(self._piece):
+
+                tailor_info = TailorNote()
+
                 # get a sticker index
-                _sticker = self.get_slice_image(avoid_duplicate_image_dict)
+                _sticker = self.get_slice_image(avoid_duplicate_image_dict, tailor_info)
                 (sticker_h, sticker_w) = _sticker.shape[:2]
 
                 # calculate bias
@@ -140,6 +154,11 @@ class StickerPlayer(AbstractProcess):
                     continue
 
                 blank_image[pin["h"]:pin["h"] + sticker_h, pin["w"]:pin["w"] + sticker_w] = _sticker
+                # save info
+                tailor_info.points = [[pin["w"], pin["h"]],
+                                      [pin["w"] + sticker_w, pin["h"]],
+                                      [pin["w"] + sticker_w, pin["h"] + sticker_h],
+                                      [pin["w"], pin["h"] + sticker_h]]
 
                 pin["h"] = pin["h"] + sticker_h + self._border
                 max_width = max(max_width, pin["w"] + sticker_w)
@@ -147,7 +166,19 @@ class StickerPlayer(AbstractProcess):
                 if pin["h"] + int(bias_h) > 0:
                     pin["h"] += int(bias_h)
 
+                # attach sticker info into writer
+                output_writer.add(tailor_info)
+                # TODO debug
+                print('tailor_info = ', tailor_info)
+
+            # generate label info
+            _pages = output_writer.exec(blank_image)
             # TODO debug
             # cv2.imshow('fixed', blank_image)
             # cv2.waitKey()
-            cv2.imwrite('debug_' + str(i) + '.jpg', blank_image)
+            cv2.imwrite('debug_' + str(i) + '.jpg', _pages.get('img'))
+            print('-' * 20)
+
+            rtn.append(_pages)
+
+        return rtn
