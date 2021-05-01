@@ -168,8 +168,6 @@ class StickerPlayer(AbstractProcess):
 
                 # attach sticker info into writer
                 output_writer.add(tailor_info)
-                # TODO debug
-                print('tailor_info = ', tailor_info)
 
             # generate label info
             _pages = output_writer.exec(blank_image)
