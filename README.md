@@ -34,3 +34,6 @@ Randomly select pictures from multiple `ImagesLoader` image loaders passed in by
 
 ## Example
 All examples are under `src/example`, please refer these code slices as quick start.
+
+## TODO
+- [ ] Abstract writer

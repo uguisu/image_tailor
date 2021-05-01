@@ -36,4 +36,4 @@ Image Tailor包含3个组件：
 使用方法，参考`src/example`下面的例子程序
 
 ## TODO
-[ ] `ImagesLoader` exclude
+- [ ] Abstract writer
