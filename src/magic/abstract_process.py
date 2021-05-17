@@ -1,6 +1,8 @@
 # coding=utf-8
 # author xin.he
 import datetime
+
+import cv2
 import numpy as np
 
 
@@ -37,3 +39,24 @@ class AbstractProcess:
 
         return (random_generator.randint(10, self._width, size=1)[0],
                 random_generator.randint(10, self._height, size=1)[0])
+
+    @staticmethod
+    def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
+        """
+        resize
+        copy from imutils.convenience
+        """
+
+        dim = None
+        (ori_h, ori_w) = image.shape[:2]
+
+        if width is not None:
+            r = width / float(ori_w)
+            dim = (width, int(ori_h * r))
+        else:
+            r = height / float(ori_h)
+            dim = (int(ori_w * r), height)
+
+        _im = cv2.resize(image, dim, interpolation=inter)
+
+        return _im

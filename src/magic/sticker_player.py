@@ -66,7 +66,7 @@ class StickerPlayer(AbstractProcess):
         part_img = cv2.imread(sticker_nm)
 
         # zoom
-        part_img = self._resize(part_img, _loader.stander_width, _loader.stander_height)
+        part_img = self.resize(part_img, _loader.stander_width, _loader.stander_height)
 
         # save info
         # tailor_info.image_path = sticker_nm
@@ -76,26 +76,6 @@ class StickerPlayer(AbstractProcess):
         tailor_info.label = _pa
 
         return part_img
-
-    def _resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
-        """
-        resize
-        copy from imutils.convenience
-        """
-
-        dim = None
-        (ori_h, ori_w) = image.shape[:2]
-
-        if width is not None:
-            r = width / float(ori_w)
-            dim = (width, int(ori_h * r))
-        else:
-            r = height / float(ori_h)
-            dim = (int(ori_w * r), height)
-
-        _im = cv2.resize(image, dim, interpolation=inter)
-
-        return _im
 
     def process(self, loop=0):
         """

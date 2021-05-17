@@ -38,34 +38,13 @@ class SewingMachine(AbstractProcess):
         for wrk_img in file_list:
             if rtn is None:
                 rtn = cv2.imread(wrk_img)
-                rtn = self._resize(rtn, width=self._loader.stander_width)
+                rtn = self.resize(rtn, width=self._loader.stander_width)
 
                 continue
             else:
                 wrk_rtn = cv2.imread(wrk_img)
-                wrk_rtn = self._resize(wrk_rtn, width=self._loader.stander_width)
+                wrk_rtn = self.resize(wrk_rtn, width=self._loader.stander_width)
 
                 rtn = cv2.vconcat([rtn, wrk_rtn])
 
         return rtn
-
-    def _resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
-        """
-        resize
-        copy from imutils.convenience
-        TODO move to share
-        """
-
-        dim = None
-        (ori_h, ori_w) = image.shape[:2]
-
-        if width is not None:
-            r = width / float(ori_w)
-            dim = (width, int(ori_h * r))
-        else:
-            r = height / float(ori_h)
-            dim = (int(ori_w * r), height)
-
-        _im = cv2.resize(image, dim, interpolation=inter)
-
-        return _im
