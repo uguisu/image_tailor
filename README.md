@@ -8,7 +8,7 @@ Image tailor is an open source image creator.
 Use cut-off, stitching or other method to generate pictures
 
 ## Component
-Currently, Image Tailor have 3 components:
+Currently, Image Tailor have 4 components:
 - `ImagesLoader` Image loader class
 - `JigsawPuzzle` Mosaic data augmentation
   - refer: [YOLOv4: Optimal Speed and Accuracy of Object Detection](https://arxiv.org/abs/2004.10934v1)
@@ -16,6 +16,7 @@ Currently, Image Tailor have 3 components:
     - 4.2. Influence of different features on Classifier training
     - 7. Acknowledgements [link](https://github.com/ultralytics/yolov3)
 - `StickerPlayer` Mixing-and-Pasting Generator
+- `SewingMachine` Vertically Stitch Image
 
 ### `ImagesLoader` Image loader
 Go through all sub-folders and files specified by root path. Files will be stored as `list`.
@@ -31,6 +32,13 @@ Randomly select pictures from multiple `ImagesLoader` image loaders passed in by
 - Copy above result to the output background image follow the rule of `from top to bottom, from left to right`
 
 ![spdemo](src/example/spdemo.jpg)
+
+### `SewingMachine` Vertically Stitch Image
+- Read image file via input `ImagesLoader` object ordered by file name.
+- The property `stander_width` of `ImagesLoader` is required.
+  All images will automatically resize to fit `stander_width`
+
+![vertically_stitched_image](src/example/vertically_stitched_image.jpg)
 
 ## Example
 All examples are under `src/example`, please refer these code slices as quick start.
